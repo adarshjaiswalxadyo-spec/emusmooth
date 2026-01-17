@@ -9,8 +9,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
@@ -24,12 +23,12 @@ jobs:
           mingw-w64-x86_64-SDL2
           mingw-w64-x86_64-nlohmann-json
 
-    - name: Configure with CMake (Ninja)
+    - name: Configure
       shell: msys2 {0}
       run: |
         mkdir build
         cd build
-        cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+        cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
     - name: Build
       shell: msys2 {0}
@@ -48,4 +47,5 @@ jobs:
         path: |
           build/*.exe
           build/SDL2.dll
+
 
