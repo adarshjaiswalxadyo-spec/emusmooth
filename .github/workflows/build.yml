@@ -9,7 +9,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
     - name: Setup MSYS2
       uses: msys2/setup-msys2@v2
@@ -23,29 +24,23 @@ jobs:
           mingw-w64-x86_64-SDL2
           mingw-w64-x86_64-nlohmann-json
 
-    - name: Configure
+    - name: Configure (CMake)
       shell: msys2 {0}
       run: |
-        mkdir build
-        cd build
-        cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+        cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
-    - name: Build
+    - name: Build (Ninja)
       shell: msys2 {0}
       run: |
-        cd build
-        ninja
+        cmake --build build
 
-    - name: Copy SDL2.dll
-      run: |
-        copy C:\msys64\mingw64\bin\SDL2.dll build\
-
-    - name: Upload EXE
+    - name: Upload Windows EXE
       uses: actions/upload-artifact@v4
       with:
         name: Emulator-Windows
         path: |
-          build/*.exe
-          build/SDL2.dll
+          build/bin/Emulator.exe
+          build/bin/SDL2.dll
+
 
 
