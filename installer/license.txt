@@ -1,0 +1,9 @@
+Emulator - Built by Adarsh Jaiswal
+
+This software is provided as-is for educational and personal use.
+
+For more information, visit:
+https://www.instagram.com/adar.xhevil/
+
+Copyright (c) 2024 Adarsh Jaiswal
+All rights reserved.
