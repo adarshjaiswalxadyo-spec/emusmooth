@@ -1,0 +1,51 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup MSYS2 (MinGW + SDL2)
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-SDL2
+          mingw-w64-x86_64-nlohmann-json
+
+    - name: Configure CMake
+      shell: msys2 {0}
+      run: |
+        mkdir -p build
+        cd build
+        cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      shell: msys2 {0}
+      run: |
+        cd build
+        cmake --build . --config Release
+
+    - name: Copy SDL2.dll
+      run: |
+        copy C:\msys64\mingw64\bin\SDL2.dll build\
+
+    - name: Upload EXE Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Emulator-Windows-EXE
+        path: |
+          build/*.exe
+          build/SDL2.dll
