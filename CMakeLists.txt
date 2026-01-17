@@ -31,22 +31,21 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # --------------------------------------------------
 if(MSVC)
     add_compile_options(/W4 /permissive-)
-    if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        add_compile_options(/O2 /DNDEBUG)
-    endif()
+    add_compile_options(/O2 /DNDEBUG)
 else()
     add_compile_options(-Wall -Wextra -pedantic)
-    if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        add_compile_options(-O3 -DNDEBUG)
-    else()
-        add_compile_options(-g)
-    endif()
+    add_compile_options(-O3 -DNDEBUG)
 endif()
 
 # --------------------------------------------------
-# SDL2
+# SDL2 (NO SDL2main)
 # --------------------------------------------------
 find_package(SDL2 REQUIRED)
+
+# IMPORTANT: Disable SDL_main
+if(WIN32)
+    add_compile_definitions(SDL_MAIN_HANDLED)
+endif()
 
 # --------------------------------------------------
 # nlohmann/json (header-only)
@@ -62,13 +61,8 @@ FetchContent_MakeAvailable(nlohmann_json)
 # --------------------------------------------------
 # Source files
 # --------------------------------------------------
-file(GLOB SRC_FILES
-    src/*.cpp
-)
-
-file(GLOB HEADER_FILES
-    include/*.h
-)
+file(GLOB SRC_FILES src/*.cpp)
+file(GLOB HEADER_FILES include/*.h)
 
 # --------------------------------------------------
 # Executable
@@ -86,24 +80,15 @@ target_include_directories(Emulator PRIVATE
 )
 
 # --------------------------------------------------
-# Link libraries
+# Link libraries (FIXED)
 # --------------------------------------------------
-if(TARGET SDL2::SDL2)
-    target_link_libraries(Emulator PRIVATE
-        SDL2::SDL2
-        SDL2::SDL2main
-        nlohmann_json::nlohmann_json
-    )
-else()
-    target_include_directories(Emulator PRIVATE ${SDL2_INCLUDE_DIRS})
-    target_link_libraries(Emulator PRIVATE
-        ${SDL2_LIBRARIES}
-        nlohmann_json::nlohmann_json
-    )
-endif()
+target_link_libraries(Emulator PRIVATE
+    SDL2::SDL2
+    nlohmann_json::nlohmann_json
+)
 
 # --------------------------------------------------
-# Assets (SAFE – empty folder friendly)
+# Assets (safe if empty)
 # --------------------------------------------------
 if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
     file(COPY "${CMAKE_SOURCE_DIR}/assets"
@@ -111,7 +96,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
 endif()
 
 # --------------------------------------------------
-# Copy SDL2.dll on Windows
+# Copy SDL2.dll (Windows)
 # --------------------------------------------------
 if(WIN32)
     find_file(SDL2_DLL
@@ -119,7 +104,6 @@ if(WIN32)
         PATHS
             ENV PATH
             C:/msys64/mingw64/bin
-        NO_DEFAULT_PATH
     )
 
     if(SDL2_DLL)
@@ -140,5 +124,6 @@ install(TARGETS Emulator DESTINATION bin)
 if(EXISTS "${CMAKE_SOURCE_DIR}/assets")
     install(DIRECTORY assets DESTINATION .)
 endif()
+
 
 
